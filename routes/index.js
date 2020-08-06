@@ -131,20 +131,25 @@ router.get('/material', async (req, res, next) => {
                     reee.material.push({
                         M_NO: item.M_NO,
                         M_NAME_AR: item.M_NAME_AR,
-                        M_NAME_EN: item.M_NAME_EN,
                         CLASS_NO: item.CLASS_NO,
-                        MB: CalculateMaterialBalance(pool, item.M_NO, StoreNo, DBName, SName, UName, Pass)
+                        UNIT_NO: item.UNIT_NO,
+                        M_PRICE: item.M_PRICE,
+                        PRICE_LIMIT: item.PRICE_LIMIT,
+                        M_TAX: item.M_TAX,
+                        M_GROUP: item.M_GROUP,
+                        material_balance: CalculateMaterialBalance(pool, item.M_NO, StoreNo, DBName, SName, UName, Pass),
+                        M_PIC: item.m_pic
                     })
                 });
-                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, result: reee });
+                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, material: reee.material });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -205,20 +210,25 @@ router.get('/materialByclass', async (req, res, next) => {
                     reee.material.push({
                         M_NO: item.M_NO,
                         M_NAME_AR: item.M_NAME_AR,
-                        M_NAME_EN: item.M_NAME_EN,
                         CLASS_NO: item.CLASS_NO,
-                        MB: CalculateMaterialBalance(pool, item.M_NO, StoreNo, DBName, SName, UName, Pass)
+                        UNIT_NO: item.UNIT_NO,
+                        M_PRICE: item.M_PRICE,
+                        PRICE_LIMIT: item.PRICE_LIMIT,
+                        M_TAX: item.M_TAX,
+                        M_GROUP: item.M_GROUP,
+                        material_balance: CalculateMaterialBalance(pool, item.M_NO, StoreNo, DBName, SName, UName, Pass),
+                        M_PIC: item.m_pic
                     })
                 });
-                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, result: reee });
+                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, material: reee.material });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -395,13 +405,13 @@ router.get('/category', async (req, res, next) => {
              
                 res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, categories: queryResult.recordset });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -457,13 +467,13 @@ router.get('/barcode', async (req, res, next) => {
 
                 res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, barcodes: queryResult.recordset });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -518,13 +528,13 @@ router.get('/customer', async (req, res, next) => {
 
                 res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, customers: queryResult.recordset });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -580,13 +590,13 @@ router.get('/users', async (req, res, next) => {
 
                 res.send({ isSuccess: true, msg: "Users Fetched Successfully", count: queryResult.recordset.length, users: queryResult.recordset });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -642,13 +652,13 @@ router.get('/bank', async (req, res, next) => {
 
                 res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, banks: queryResult.recordset });
             } else {
-                res.send(JSON.stringify({ success: false, message: "Empity" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
             }
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
@@ -660,26 +670,27 @@ router.get('/bank', async (req, res, next) => {
 router.post('/order', async (req, res, next) => {
     console.log(req.query);
 
-    var DBName = req.query.db
-    var SName = req.query.sname
-    var UName = req.query.uname
-    var Pass = req.query.pass
 
-    var invoice_no = req.query.invoice_no
-    var invoiceDate = req.query.invoiceDate
-    var invoiceType = req.query.invoiceType
-    var accNo = req.query.accNo
-    var insert_user = req.query.insert_user
-    var sName = req.query.sName
-    var manual_no = req.query.manual_no
-    var total = req.query.total
-    var discount = req.query.discount
-    var netTotal = req.query.netTotal
-    var machine_name = req.query.machine_name
-    var comment = req.query.comment
-    var lat = req.query.lat
-    var lon = req.query.lon
 
+    var invoice_no = req.body.invoice_no
+    var invoiceDate = req.body.invoiceDate
+    var invoiceType = req.body.invoiceType
+    var accNo = req.body.accNo
+    var insert_user = req.body.insert_user
+    var sName = req.body.sName
+    var manual_no = req.body.manual_no
+    var total = req.body.total
+    var discount = req.body.discount
+    var netTotal = req.body.netTotal
+    var machine_name = req.body.machine_name
+    var comment = req.body.comment
+
+    var lat = req.body.lat
+    var lon = req.body.lon
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
 
     var config = {
 
@@ -717,49 +728,48 @@ router.post('/order', async (req, res, next) => {
             const pool = await poolPromise
             const queryResult = await pool.request()
                 .input('INVOICE_NO', sql.NVarChar, invoice_no)
-                .input('INVOICE_DATE', sql.NVarChar, invoiceDate)
-                .input('INVOICE_TYPE', sql.Int, invoiceType)
-                .input('acc_no', sql.Int, accNo)
+                .input('INVOICE_DATE', sql.DateTime, invoiceDate)
+                .input('INVOICE_TYPE', sql.Float, invoiceType)
+                .input('acc_no', sql.NVarChar, accNo)
                 .input('user_ins', sql.NVarChar, insert_user)
                 .input('date_ins', sql.NVarChar, datetime)
                 .input('s_name', sql.NVarChar, sName)
-                .input('manual_no', sql.Int, manual_no)
+                .input('manual_no', sql.NVarChar, manual_no)
                 .input('machine_name', sql.NVarChar, machine_name)
-                .input('INVOICE_SUM', sql.Decimal, total)
-                .input('INVOICE_DISCOUNT', sql.Decimal, discount)
-                .input('INVOICE_NET', sql.Decimal, netTotal)
+                .input('INVOICE_SUM', sql.Float, total)
+                .input('INVOICE_DISCOUNT', sql.Float, discount)
+                .input('INVOICE_NET', sql.Float, netTotal)
                 .input('invoice_comment', sql.NVarChar, comment)
-                .input('lat', sql.Decimal, lat)
-                .input('lon', sql.Decimal, lon)
+                .input('lat', sql.NVarChar, lat)
+                .input('lon', sql.NVarChar, lon)
                 .query('BEGIN IF NOT EXISTS(SELECT * FROM [' + DBName + '].[dbo].[SALES_main_Mobile] WHERE [INVOICE_NO] LIKE @INVOICE_NO)BEGIN insert into [' + DBName + '].[dbo].[SALES_main_Mobile] (INVOICE_NO, INVOICE_DATE, INVOICE_TYPE, acc_no, user_ins, date_ins, s_name,manual_no,machine_name,INVOICE_SUM,INVOICE_DISCOUNT,INVOICE_NET ,invoice_comment,lat,lon) values(@INVOICE_NO, @INVOICE_DATE, @INVOICE_TYPE, @acc_no, @user_ins, @date_ins, @s_name,@manual_no,@machine_name,@INVOICE_SUM,@INVOICE_DISCOUNT,@INVOICE_NET ,@invoice_comment,@lat,@lon)END END');
             console.log(queryResult) // Debug to see
 
             if (queryResult.rowsAffected != null) {
-                res.send(JSON.stringify({ success: true, message: "Success" }))
+                res.send(JSON.stringify({ isSuccess: true, msg:"Row Added Successfully" }))
             } else {
-                res.send(JSON.stringify({ success: false, message: "Failed" }))
+                res.send(JSON.stringify({ isSuccess: false, msg: "Failed" }))
             }
 
 
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
 
-
 router.post('/updateOrder', async (req, res, next) => {
     console.log(req.query);
 
-    var DBName = req.query.db
-    var SName = req.query.sname
-    var UName = req.query.uname
-    var Pass = req.query.pass
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
 
-    var invoice_no = req.query.invoice_no
+    var invoice_no = req.body.invoice_no
     var order_detail;
 
 
@@ -790,7 +800,7 @@ router.post('/updateOrder', async (req, res, next) => {
         }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
 
     try {
-        order_detail = JSON.parse(req.query.orderDetail)
+        order_detail = JSON.parse(req.body.orderDetail)
     } catch (err) {
         console.log(err)
         res.status(500)
@@ -825,7 +835,7 @@ router.post('/updateOrder', async (req, res, next) => {
 
             for (i = 0; i < order_detail.length; i++) {
                 table.rows.add(invoice_no,
-                    order_detail[i]["M_NO"],
+                    order_detail[i]["m_no"],
                     order_detail[i]["m_barcode"],
                     order_detail[i]["m_name"],
                     order_detail[i]["m_price"],
@@ -848,19 +858,119 @@ router.post('/updateOrder', async (req, res, next) => {
             request.bulk(table, (err) => {
                 if (err) {
                     console.log(err)
-                    res.send(JSON.stringify({ success: false, message: err }))
+                    res.send(JSON.stringify({ isSuccess: false, msg: err }))
                 } else {
-                    res.send(JSON.stringify({ success: true, message: "Success" }))
+                    res.send(JSON.stringify({ isSuccess: true, msg: "Success" }))
                 }
 
             })
 
         } catch (err) {
-            res.send(JSON.stringify({ success: false, message: err.message }))
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
         }
     } else {
-        res.send(JSON.stringify({ success: false, message: "BAD CONNECTION" }))
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
     }
 
 });
+//================================================
+// Paymaster
+// POST /  
+//================================================
+router.post('/paymaster', async (req, res, next) => {
+    console.log(req.query);
+
+
+
+    var PAY_NO = req.body.PAY_NO
+    var PAY_DATE = req.body.PAY_DATE
+    var ACC_NO = req.body.ACC_NO
+    var ACC_NAME = req.body.ACC_NAME
+    var PAY_BYAN = req.body.PAY_BYAN
+    var PAY_CHECK = req.body.PAY_CHECK
+    var PAY_CHACK_DATE = req.body.PAY_CHACK_DATE
+    var PAY_BANK = req.body.PAY_BANK
+    var PAY_WAY = req.body.PAY_WAY
+    var TOT_AMOUNT = req.body.TOT_AMOUNT
+    var manual_no = req.body.manual_no
+    var machineName = req.body.machineName
+    var insertuser = req.body.insertuser
+
+ 
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+            var datetime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+
+            const pool = await poolPromise
+            const queryResult = await pool.request()
+                .input('PAY_NO', sql.NVarChar, PAY_NO)
+                .input('PAY_DATE', sql.DateTime, PAY_DATE)
+                .input('ACC_NO', sql.Int, ACC_NO)
+                .input('ACC_NAME', sql.NVarChar, ACC_NAME)
+                .input('PAY_BYAN', sql.NVarChar, PAY_BYAN)
+                .input('PAY_CHECK', sql.NVarChar, PAY_CHECK)
+                .input('PAY_CHACK_DATE', sql.NVarChar, PAY_CHACK_DATE)
+                .input('PAY_BANK', sql.NVarChar, PAY_BANK)
+                .input('PAY_WAY', sql.Int, PAY_WAY)
+                .input('TOT_AMOUNT', sql.Float, TOT_AMOUNT)
+                .input('manual_no', sql.Int, manual_no)
+                .input('machineName', sql.NVarChar, machineName)
+                .input('insertuser', sql.NVarChar, insertuser)
+                .input('date_ins', sql.NVarChar, datetime)
+                .input('machine_id', sql.NVarChar, manual_no)
+                .query('insert into[' + DBName + '].[dbo].[PAYMASTER_mobile] (PAY_NO,PAY_DATE,ACC_NO,ACC_NAME,PAY_BYAN,PAY_CHECK,PAY_CHACK_DATE,PAY_BANK,PAY_WAY,TOT_AMOUNT,manual_no,machine_name,user_ins,date_ins,machine_id) values (@PAY_NO, @PAY_DATE, @ACC_NO, @ACC_NAME, @PAY_BYAN, @PAY_CHECK, @PAY_CHACK_DATE, @PAY_BANK, @PAY_WAY, @TOT_AMOUNT, @manual_no, @machineName , @insertuser,@date_ins,@machine_id) ');
+            console.log(queryResult) // Debug to see
+
+            if (queryResult.rowsAffected != null) {
+                res.send(JSON.stringify({ isSuccess: true, msg: "Row Added Successfully" }))
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Failed" }))
+            }
+
+
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+
+
 module.exports = router;
