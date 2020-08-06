@@ -1,0 +1,16 @@
+{
+  "name": "my-invoice-mssqlapi",
+  "version": "0.0.0",
+  "description": "MyInvoiceMSSQLAPI",
+  "main": "app.js",
+  "author": {
+    "name": ""
+  },
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "moment": "^2.27.0",
+    "mssql": "^6.2.1",
+    "tedious": "^9.0.1"
+  }
+}
