@@ -733,13 +733,171 @@ router.get('/materialLastitem', async (req, res, next) => {
 
 });
 
+
+router.get('/materialByName', async (req, res, next) => {
+    console.log(req.query);
+    req.setTimeout(100000)
+    var DBName = req.query.db
+    var SName = req.query.sname
+    var UName = req.query.uname
+    var Pass = req.query.pass
+    var CONTENT = req.query.content
+    var StoreNo = req.query.store
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+            const pool = await poolPromise
+            const queryResult = await pool.request()
+                .input('Store_no', sql.Int, StoreNo)
+                .input('CONTENT', sql.NVarChar, CONTENT)
+                .query("SELECT *, [" + DBName + "].[dbo].material_jard (M_NO,getdate(),@Store_no) AS MB,[" + DBName + "].[dbo].[get_material_barcode](M_NO) As M_Barcode FROM [" + DBName + "].[dbo].[MATERIALS] WHERE [M_NAME_AR] LIKE  '%'+ @CONTENT+ '%'")
+
+            var reee = {
+                material: []
+            };
+            if (queryResult.recordset.length > 0) {
+
+
+
+                queryResult.recordset.forEach(item => {
+
+
+                    var sumMB = item.MB
+                    if (StoreNo == 0)
+                        sumMB = 999999.0
+                    reee.material.push({
+                        M_NO: item.M_NO,
+                        M_Barcode: item.M_Barcode,
+                        M_NAME_AR: item.M_NAME_AR,
+                         material_balance: sumMB,
+                        M_PRICE: item.M_PRICE,
+                        PRICE_LIMIT: item.PRICE_LIMIT,
+                        M_TAX: item.M_TAX,
+                        M_GROUP: item.M_GROUP,
+                        M_PIC: item.m_pic,
+                        ser: item.ser
+                    })
+                });
+                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, material: reee.material });
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
+            }
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+
+router.get('/barcodeByMNO', async (req, res, next) => {
+    console.log(req.query);
+    res.setTimeout(50000)
+    req.setTimeout(50000)
+    var DBName = req.query.db
+    var SName = req.query.sname
+    var UName = req.query.uname
+    var Pass = req.query.pass
+    var Store = req.query.store
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+
+            const pool = await poolPromise
+            var queryResult
+
+
+            if (Store == null || Store == 0) {
+                queryResult = await pool.request()
+                    .query('SELECT [' + DBName + '].[dbo].[get_material_barcode](@store_no_to)')
+
+            } else {
+                queryResult = await pool.request().input('store_no_to', sql.Int, Store)
+                    .query('SELECT [' + DBName + '].[dbo].[get_material_barcode](@store_no_to)')
+            }
+            if (queryResult.recordset.length > 0) {
+
+                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, serials: queryResult.recordset });
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
+            }
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
 //================================================
 // SERIALS
 // GET /  
 //================================================
 router.get('/serial', async (req, res, next) => {
     console.log(req.query);
-
+    res.setTimeout(50000)
+    req.setTimeout(50000)
     var DBName = req.query.db
     var SName = req.query.sname
     var UName = req.query.uname
@@ -912,7 +1070,7 @@ router.get('/category', async (req, res, next) => {
         try {
             const pool = await poolPromise
             const queryResult = await pool.request()
-                .query('SELECT S_NO,S_NAME,S_PIC FROM [' + DBName + '].[dbo].[CLASSES] ORDER BY S_NO ASC')
+                .query('SELECT S_NO,S_NAME,S_PIC FROM [' + DBName + '].[dbo].[CLASSES] WHERE [pos_icon] = 1 ORDER BY S_NO ASC')
 
             if (queryResult.recordset.length > 0) {
              
@@ -1376,7 +1534,7 @@ router.get('/customer', async (req, res, next) => {
         try {
             const pool = await poolPromise
             const queryResult = await pool.request()
-                .query('SELECT ACC_NO,ACC_NAME,EMP_NO,bonus FROM [' + DBName + '].[ACC].[acc_chart] WHERE CUST = 1 AND ACC_TYPE = 2')
+                .query('SELECT ACC_NO,ACC_NAME,EMP_NO,bonus FROM [' + DBName + '].[ACC].[acc_chart] WHERE CUST = 1 AND ACC_TYPE = 2 AND( AV =0 OR AV is null)')
 
             if (queryResult.recordset.length > 0) {
 
@@ -2606,6 +2764,8 @@ router.post('/note', async (req, res, next) => {
     var insert_user = req.body.insert_user
     var machine_name = req.body.machine_name
     var notes = req.body.notes
+    var lat = req.body.lat
+    var lon = req.body.lon
     var DBName = req.body.db
     var SName = req.body.sname
     var UName = req.body.uname
@@ -2680,11 +2840,13 @@ router.post('/tempCustomer', async (req, res, next) => {
     var CustomerDate = req.body.customer_date
     var Name = req.body.name
     var Phone = req.body.phone
-    var Location = req.body.location
+    var Address = req.body.address
     var Note = req.body.note
     var manual_no = req.body.manual_no
     var insertUser = req.body.insertUser
     var machine_name = req.body.machine_name
+    var lat = req.body.lat
+    var lon = req.body.lon
     var DBName = req.body.db
     var SName = req.body.sname
     var UName = req.body.uname
@@ -2728,13 +2890,15 @@ router.post('/tempCustomer', async (req, res, next) => {
                 .input('CUSTOMER_DATE', sql.DateTime, CustomerDate)
                 .input('Name', sql.NVarChar, Name)
                 .input('Phone', sql.NVarChar, Phone)
-                .input('Location', sql.NVarChar, Location)
+                .input('Address', sql.NVarChar, Address)
                 .input('Note', sql.NVarChar, Note)
                 .input('insertUser', sql.NVarChar, insertUser)
                 .input('date_ins', sql.NVarChar, datetime)
                 .input('manual_no', sql.NVarChar, manual_no)
                 .input('machine_name', sql.NVarChar, machine_name)
-                .query('insert into [' + DBName + '].[dbo].[Mobile_Customers] (customer_no, customer_date, name, phone, location ,note,user_ins,date_ins,manual_no,machine_name) values (@CUSTOMER_NO, @CUSTOMER_DATE, @Name, @Phone, @Location, @Note, @insertUser, @date_ins,@manual_no, @machine_name)');
+                .input('lat', sql.NVarChar, lat)
+                .input('lon', sql.NVarChar, lon)
+                .query('insert into [' + DBName + '].[dbo].[Mobile_Customers] (customer_no, customer_date, name, phone, address ,note,user_ins,date_ins,manual_no,machine_name,lat,lon) values (@CUSTOMER_NO, @CUSTOMER_DATE, @Name, @Phone, @Address, @Note, @insertUser, @date_ins,@manual_no, @machine_name,@lat,@lon)');
             console.log(queryResult) // Debug to see
 
             if (queryResult.rowsAffected != null) {
@@ -2751,6 +2915,355 @@ router.post('/tempCustomer', async (req, res, next) => {
     }
 
 });
+
+//Get Stores 
+router.get('/stores', async (req, res, next) => {
+    console.log(req.query);
+
+    var DBName = req.query.db
+    var SName = req.query.sname
+    var UName = req.query.uname
+    var Pass = req.query.pass
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+            const pool = await poolPromise
+            const queryResult = await pool.request()
+                .query('SELECT store_no,store_name,cost_cinter_no,store_cash_no,store_sales_no FROM [' + DBName + '].[ACC].[stores]')
+
+            if (queryResult.recordset.length > 0) {
+
+                res.send({ isSuccess: true, msg: "DATA FETCHED SUCCESSFULLY", count: queryResult.recordset.length, stores: queryResult.recordset });
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Empity" }))
+            }
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+//================================================
+// Transfers And Transfers Details 
+// POST /  
+//================================================
+
+router.post('/transfer', async (req, res, next) => {
+    console.log(req.query);
+
+
+
+    var invoice_no = req.body.invoice_no
+    var invoiceDate = req.body.invoiceDate
+    var storeFrom = req.body.storeFrom
+    var storeTo = req.body.storeTo
+    var insert_user = req.body.insert_user
+    var manual_no = req.body.manual_no
+    var machine_name = req.body.machine_name
+    var comment = req.body.comment
+
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+            var datetime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+
+            const pool = await poolPromise
+            const queryResult = await pool.request()
+                .input('INVOICE_NO', sql.NVarChar, invoice_no)
+                .input('INVOICE_DATE', sql.DateTime, invoiceDate)
+                .input('store_no_from', sql.Float, storeFrom)
+                .input('store_no_to', sql.NVarChar, storeTo)
+                .input('user_ins', sql.NVarChar, insert_user)
+                .input('date_ins', sql.NVarChar, datetime)
+                .input('manual_no', sql.NVarChar, manual_no)
+                .input('machine_name', sql.NVarChar, machine_name)
+                .input('invoice_comment', sql.NVarChar, comment)
+                .query('BEGIN IF NOT EXISTS(SELECT * FROM [' + DBName + '].[dbo].[Transfer_Main_Mobile] WHERE [INVOICE_NO] LIKE @INVOICE_NO)BEGIN insert into [' + DBName + '].[dbo].[Transfer_Main_Mobile] (INVOICE_NO, INVOICE_DATE, store_no_from, store_no_to, user_ins, date_ins,manual_no,machine_name,invoice_comment) values(@INVOICE_NO, @INVOICE_DATE, @store_no_from, @store_no_to, @user_ins, @date_ins,@manual_no,@machine_name,@invoice_comment)END END');
+            console.log(queryResult) // Debug to see
+
+            if (queryResult.rowsAffected != null) {
+                res.send(JSON.stringify({ isSuccess: true, msg: "Row Added Successfully" }))
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Failed" }))
+            }
+
+
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+router.post('/updateTransfer', async (req, res, next) => {
+    console.log(req.query);
+
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
+
+    var invoice_no = req.body.invoice_no
+    var order_detail;
+
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+    try {
+        order_detail = JSON.parse(req.body.orderDetail)
+    } catch (err) {
+        console.log(err)
+        res.status(500)
+        res.send(JSON.stringify({ success: false, message: err }))
+    }
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+
+            const pool = await poolPromise
+            const table = new sql.Table('[' + DBName + '].[dbo].[Transfer_Details_Mobile]') // Create virtual table to bulk insert
+            table.create = true
+
+            table.columns.add('invoice_no', sql.NVarChar(255), { nullable: false })
+            table.columns.add('M_NO', sql.Int, { nullable: true })
+            table.columns.add('m_barcode', sql.NVarChar(255), { nullable: true })
+            table.columns.add('m_name', sql.NVarChar(255), { nullable: true })
+            table.columns.add('m_price', sql.Float, { nullable: true })
+            table.columns.add('m_quant', sql.Float, { nullable: true })
+            table.columns.add('m_tax', sql.Float, { nullable: true })
+            table.columns.add('m_discount', sql.Float, { nullable: true })
+            table.columns.add('m_tot', sql.Float, { nullable: true })
+            table.columns.add('counter_no', sql.Int, { nullable: true })
+            table.columns.add('counter_serial', sql.Int, { nullable: true })
+            table.columns.add('m_comment', sql.NVarChar(255), { nullable: true })
+            table.columns.add('unit_no', sql.Int, { nullable: true })
+            table.columns.add('rownum', sql.Int, { nullable: true })
+            table.columns.add('machine_name_d', sql.NVarChar(255), { nullable: true })
+            table.columns.add('m_price_before', sql.Float, { nullable: true })
+            table.columns.add('m_tot_before', sql.Float, { nullable: true })
+            table.columns.add('no_group', sql.Float, { nullable: true })
+            table.columns.add('serial_no', sql.NVarChar(255), { nullable: true })
+
+            for (i = 0; i < order_detail.length; i++) {
+
+                const queryResult = await pool.request()
+                    .input('invoice_no', sql.NVarChar, invoice_no)
+                    .input('m_no', sql.Int, order_detail[i]["m_no"])
+                    .input('m_name', sql.NVarChar, order_detail[i]["m_name"])
+                    .input('m_price', sql.Float, order_detail[i]["m_price"])
+                    .input('m_quant', sql.Float, order_detail[i]["m_quant"])
+                    .input('m_tot', sql.Float, order_detail[i]["m_tot"])
+                    .input('rownum', sql.Int, (i + 1))
+                    .input('m_comment', sql.NVarChar, order_detail[i]["m_comment"])
+                    .query('SELECT * FROM [' + DBName + '].[dbo].[Transfer_Details_Mobile] WHERE invoice_no = @invoice_no AND M_NO =@m_no AND  m_name LIKE @m_name AND m_price =@m_price AND m_quant =@m_quant  AND m_tot =@m_tot  AND rownum =@rownum AND m_comment LIKE @m_comment')
+
+                if (queryResult.recordset.length > 0) {
+                    console.log(queryResult.recordset.length)
+                } else {
+                    var group_no = order_detail[i]["no_group"]
+                    if (group_no == 0)
+                        group_no = null
+
+                    table.rows.add(invoice_no,
+                        order_detail[i]["m_no"],
+                        order_detail[i]["m_barcode"],
+                        order_detail[i]["m_name"],
+                        order_detail[i]["m_price"],
+                        order_detail[i]["m_quant"],
+                        order_detail[i]["m_tax"],
+                        order_detail[i]["m_discount"],
+                        order_detail[i]["m_tot"],
+                        order_detail[i]["counter_no"],
+                        order_detail[i]["counter_serial"],
+                        order_detail[i]["m_comment"],
+                        order_detail[i]["unit_no"],
+                        (i + 1),
+                        order_detail[i]["machine_name_d"],
+                        order_detail[i]["m_price_before"],
+                        order_detail[i]["m_tot_before"],
+                        null,
+                        order_detail[i]["serial_no"],
+                    )
+                }
+            }
+            const request = pool.request()
+            request.bulk(table, (err) => {
+                if (err) {
+                    console.log(err)
+                    res.send(JSON.stringify({
+                        isSuccess: false, msg: err.message
+                    }))
+                } else {
+                    res.send(JSON.stringify({ isSuccess: true, msg: "Success" }))
+                }
+
+            })
+
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+router.post('/deleteTransferItems', async (req, res, next) => {
+    console.log(req.query);
+
+    var DBName = req.body.db
+    var SName = req.body.sname
+    var UName = req.body.uname
+    var Pass = req.body.pass
+
+    var invoice_no = req.body.invoice_no
+
+
+    var config = {
+
+        server: SName,
+        authentication: {
+            type: 'default',
+            options: {
+                userName: UName,
+                password: Pass
+            }
+        },
+        options: {
+            database: DBName,
+            rowCollectionOnDone: true,
+            encrypt: false,
+
+            useColumnNames: false
+        }
+    }
+
+    const poolPromise = new sql.ConnectionPool(config)
+        .connect()
+        .then(pool => {
+            console.log('Connected To MSSQL ' + config.database);
+            return pool;
+        }).catch(err => console.log('Database Connection Failed ! Bad Config :', err));
+
+
+    if (DBName != null && SName != null && UName != null && Pass != null) {
+        try {
+
+
+
+
+            const pool = await poolPromise
+            const deleteQuerey = await pool.request()
+                .input('invoice_no', sql.NVarChar, invoice_no)
+                .query('DELETE FROM [' + DBName + '].[dbo].[Transfer_Details_Mobile] WHERE invoice_no = @invoice_no ')
+
+            if (deleteQuerey.rowsAffected != null) {
+                res.send(JSON.stringify({ isSuccess: true, msg: "Row Delleted Successfully" }))
+            } else {
+                res.send(JSON.stringify({ isSuccess: false, msg: "Failed" }))
+            }
+
+        } catch (err) {
+            res.send(JSON.stringify({ isSuccess: false, msg: err.message }))
+        }
+    } else {
+        res.send(JSON.stringify({ isSuccess: false, msg: "BAD CONNECTION" }))
+    }
+
+});
+
+
 
 
 module.exports = router;
